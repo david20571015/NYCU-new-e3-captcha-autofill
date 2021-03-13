@@ -1,0 +1,30 @@
+{
+    "manifest_version": 2,
+    "name": "captcha_autofill",
+    "description": "autofill captcha code",
+    "version": "1.0",
+    "icons": {
+        "48": "src/icon.png"
+    },
+    "background": {
+        "persistent": false,
+        "scripts": [
+            "src/background.js"
+        ]
+    },
+    "permissions": [
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "https://e3.nycu.edu.tw/login/index.php"
+            ],
+            "js": [
+                "src/content.js"
+            ]
+        }
+    ],
+    "page_action": {
+        "default_icon": "src/icon.png"
+    }
+}
