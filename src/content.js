@@ -1,43 +1,33 @@
-function getCaptchaImage(doc) {
-  return doc.querySelector('#captcha-desktop');
-}
-
-function getLoginTextField(doc) {
-  return doc.getElementsByName('captcha_code')[0];
-}
-
-function imageRecongizeAndFillLoginText(base64Img) {
+async function imageRecongize(base64Img) {
   const ocrURL = 'https://api.ocr.space/parse/image';
 
   const formData = new FormData();
   formData.append('base64Image', base64Img);
   formData.append('apikey', '0969d7ef7c88957');
   formData.append('OCREngine', '2');
-
   const request = {method: 'POST', body: formData};
 
-  fetch(ocrURL, request)
-      .then((response) => response.json())
-      .then((jsonData) => {
-        console.log('jsonData:', jsonData);
-        const parsedResults = jsonData['ParsedResults'][0]['ParsedText'];
-        console.log('parsedResult', parsedResults);
-        return parsedResults;
-      })
-      .then((code) => fillLoginTextField(code))
-      .catch((err) => console.log('error: ', err));
-}
+  const fetchResult = await fetch(ocrURL, request)
+      .then((res) => res.json())
+      .catch((err) => err);
 
+  console.log('fetchResult', fetchResult);
+
+  if (fetchResult instanceof Error) throw fetchResult;
+
+  const parsedResults = fetchResult['ParsedResults']
+      .reduce((acc, val) => acc += val['ParsedText'], '');
+
+  return parsedResults;
+}
 
 function fillLoginTextField(code) {
-  const loginTextField = getLoginTextField(document);
-  loginTextField.value = code;
+  const loginTextFieldList = document.getElementsByName('captcha_code');
+  for (const textField of loginTextFieldList) textField.value = code;
 }
 
-function imageUrlToBase64(url) {
-  const img = new Image();
-
-  img.onload = function() {
+function captchaImageOnLoad(img) {
+  return async function() {
     const canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
@@ -46,16 +36,20 @@ function imageUrlToBase64(url) {
     ctx.drawImage(img, 0, 0);
 
     base64 = canvas.toDataURL('image/png');
-    imageRecongizeAndFillLoginText(base64);
+    console.log('base64', base64);
+
+    try {
+      const code = await imageRecongize(base64);
+      fillLoginTextField(code);
+    } catch (e) {
+      alert(e);
+    }
   };
-  img.src = url;
-}
+};
 
 function main() {
-  const captchaImage = getCaptchaImage(document);
-  console.log(captchaImage.src);
-  const base64 = imageUrlToBase64(captchaImage.src);
-  console.log('base64: ' + base64);
+  const captchaImage = document.querySelector('#captcha-desktop');
+  captchaImage.onload = captchaImageOnLoad(captchaImage);
 }
 
 window.addEventListener('load', main, false);
