@@ -1,3 +1,23 @@
+function modifyCode(code) {
+  console.log('code');
+  console.log(code);
+  if (code.length !== 4) throw new Error('Please reflash the page.');
+
+  const correctingMap = {
+    'O': 0,
+    'o': 0,
+    'l': 1,
+    'i': 1,
+  };
+
+  for (let key of code) {
+    if ( Object.keys(correctingMap).includes(key)) key = correctedMap[key];
+  }
+  if (Number.isNaN(code)) throw new Error('Please reflash the page.');
+
+  return code;
+}
+
 async function imageRecongize(base64Img) {
   const ocrURL = 'https://api.ocr.space/parse/image';
 
@@ -15,8 +35,9 @@ async function imageRecongize(base64Img) {
 
   if (fetchResult instanceof Error) throw fetchResult;
 
-  const parsedResults = fetchResult['ParsedResults']
+  let parsedResults = fetchResult['ParsedResults']
       .reduce((acc, val) => acc += val['ParsedText'], '');
+  parsedResults = modifyCode(parsedResults);
 
   return parsedResults;
 }
