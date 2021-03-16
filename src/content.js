@@ -1,19 +1,20 @@
 function modifyCode(code) {
   console.log('code');
   console.log(code);
-  if (code.length !== 4) throw new Error('Please reflash the page.');
 
-  const correctingMap = {
+  const correcting = {
     'O': 0,
     'o': 0,
     'l': 1,
     'i': 1,
+    'A': 4,
   };
 
   for (let key of code) {
-    if ( Object.keys(correctingMap).includes(key)) key = correctedMap[key];
+    if ( Object.keys(correcting).includes(key)) key = correctedMap[key];
   }
-  if (Number.isNaN(code)) throw new Error('Please reflash the page.');
+
+  if (!/\d{4}/.test(code)) throw new Error('Please reflash the page.');
 
   return code;
 }
